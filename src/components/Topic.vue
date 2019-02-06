@@ -1,10 +1,41 @@
 <template>
-  <div class="container">
-    <p>{{ question.question.map((q) => { return q.text }).join() }}</p>
-    <!-- <transition-group v-on:enter="moveShit" tag="div" class="tiles" v-bind:css="false"> -->
-    <div class="columns is-centered" v-for="chunk in responsesChunks" v-bind:key="chunk">
-      <div v-bind:class="{ fixed_person: isFixed }" class="is-pulled-left column person" v-bind:key="response.respondent" v-for="response in chunk" v-bind:id="'person' + response.respondent" v-bind:ref="'person' + response.respondent" v-bind:answer="response.response">
-        <img v-bind:src="response.imgSrc" />
+  <div>
+    <div class="container" v-if="question.question">
+      <p>{{ question.question.map((q) => { return q.text }).join() }}</p>
+      <div class="columns is-centered" v-for="chunk in responsesChunks">
+        <div v-bind:class="{ fixed_person: isFixed, has_video: response.videoSrc, dimmed: isDimmed }" class="is-pulled-left column person" v-for="response in chunk" v-bind:id="'person' + response.respondent" v-bind:ref="'person' + response.respondent" v-bind:answer="response.response">
+          <component :is="response.video?'a':'span'"  @click="showModal[response.respondent] = true">
+            <img v-bind:src="response.imgSrc" />
+          </component>
+          <modal v-if="showModal[response.respondent]" @close="showModal[response.respondent] = false">
+            <video src="response.videoSrc">
+            </video>
+          </modal>
+        </div>
+      </div>
+    </div>
+    <div class="columns bottom_menu is-centered" id="bottomMenu" ref="bottomMenu" v-show="isFixed">
+      <div class="column has-text-left">
+        <span v-show="locale === 'fi'">Täysin eri mieltä</span>
+        <span v-show="locale === 'en'">Completely disagree</span>
+      </div>
+      <div class="column">
+        <span v-show="locale === 'fi'">Eri mieltä</span>
+        <span v-show="locale === 'en'">Somewhat disagree</span>
+      </div>
+      <div class="column">
+        <router-link :to="{name: 'Index'}">
+          <span v-show="locale === 'fi'">Vaihda aihe</span>
+          <span v-show="locale === 'en'">Change topic</span>
+        </router-link>
+      </div>
+      <div class="column">
+        <span v-show="locale === 'fi'">Sanaa mieltä</span>
+        <span v-show="locale === 'en'">Somewhat agree</span>
+      </div>
+      <div class="column has-text-right">
+        <span v-show="locale === 'fi'">Täysin samaa mieltä</span>
+        <span v-show="locale === 'en'">Completely agree</span>
       </div>
     </div>
   </div>
@@ -26,9 +57,12 @@ export default {
       tops: [],
       vertRef: [],
       rows: 7,
-      horzRef: []
+      horzRef: [],
+      showModal: [],
+      isDimmed: false
     }
   },
+  props: ['locale'],
   computed: {
     responsesChunks () {
       return _.chunk(Object.values(this.responses), 14)
@@ -52,22 +86,26 @@ export default {
     getNewRow (array) {
       array.forEach((startValue, index) => {
         array[index] = this.vertRef[this.participants[index + 1].age]
-        console.log(index)
         this.responses[index].vertref = this.vertRef[this.participants[index + 1].age]
       })
       return array
+    },
+    dimIcons (i) {
+      this.isDimmed = true
     },
     moveShit (el, index, value, done) {
       this.horzRef[this.iconValue(value)] = this.horzRef[this.iconValue(value)] || []
       this.horzRef[this.iconValue(value)][this.participants[index].age] = this.horzRef[this.iconValue(value)][this.participants[index].age] || 0
       if (this.animationTrigger === true) {
         Velocity(el, {
-          left: Math.min(94, parseInt(parseFloat(this.iconValue(value) * 14.28) + 4 + Math.min(9.2, parseFloat(2.875 * this.horzRef[this.iconValue(value)][this.participants[index].age])))) + 'vw',
+          left: Math.min(93, parseInt(parseFloat(this.iconValue(value) * 14.28) + 4 + Math.min(9.2, parseFloat(2.875 * this.horzRef[this.iconValue(value)][this.participants[index].age])))) + 'vw',
           top: this.tops[index] + 'px'
         }, {
           duration: 3000,
           easing: 'linear',
-          complete: done
+          complete: () => {
+            this.dimIcons(index)
+          }
         })
         this.horzRef[this.iconValue(value)][this.participants[index].age]++
       } else {
@@ -97,15 +135,19 @@ export default {
     this.responses = response.data.data
     this.responses.forEach(resp => {
       this.$set(resp, 'imgSrc', '/static/avatars/' + resp.respondent + '_3.png')
+      if (resp.video) {
+        this.$set(resp, 'videoSrc', 'https://s3.wasabisys.com/icewhistle-content/sandbox/101/' + resp.respondent + '_' + this.$route.params.id + '.mp4')
+      } else {
+        this.$set(resp, 'videoSrc', false)
+      }
     })
   },
   async mounted () {
     await this.sleep(3000)
-    this.changeFace()
+    await this.changeFace()
     // console.log(this.$refs['person2'][0].clientHeight)
     // console.log(this.$refs['person100'][0].getBoundingClientRect().top)
     this.rows = parseInt(this.$refs['person100'][0].getBoundingClientRect().top / this.$refs['person2'][0].clientHeight)
-
     for (let i = 0; i <= 99; i++) {
       let el = this.$refs['person' + parseInt(i + 1)][0]
       let top = el.getBoundingClientRect().top
@@ -116,7 +158,7 @@ export default {
       el.style.left = left + 'px'
     }
     this.vertRef = Array.from(new Set(this.tops)).reverse()
-
+    this.$refs.bottomMenu.style.top = parseInt(this.vertRef[1] + 95) + 'px'
     this.tops = this.getNewRow(this.tops)
     await this.sleep(1500)
     this.animationTrigger = true

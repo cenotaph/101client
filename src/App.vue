@@ -25,6 +25,7 @@ export default {
   watch: {
     locale: {
       handler () {
+        this.$emit('locale', this.locale)
         localStorage.setItem('locale', this.locale)
       },
       deep: true
@@ -64,6 +65,17 @@ $column-gap: 0.15rem;
   img {
     max-height: 10vH;
   }
+  &.dimmed {
+    opacity: 0.35;
+    &.has_video {
+      opacity: 1 !important;
+    }
+  }
+}
+.fixed_menu {
+  position: fixed;
+  width: 98%;
+  left: 1%;
 }
 .fixed_person {
   position: fixed;
@@ -94,8 +106,28 @@ html {
     padding-top: 1.5rem;
     background-color: black;
   }
+
+  .bottom_menu {
+    color: white;
+    width: 98%;
+    left: 1%;
+    margin-top: 15px;
+    position: fixed;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    a {
+      color: white;
+      border: 2px solid white !important;
+      padding: 0.25rem;
+    }
+  }
 }
 
+.person {
+  &.has_video {
+    z-index: 99;
+  }
+}
 .columns {
   margin-bottom: 0 !important;
 }

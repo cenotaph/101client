@@ -4,7 +4,9 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import VueI18n from 'vue-i18n'
+import VueSilentbox from 'vue-silentbox'
 
+Vue.use(VueSilentbox)
 Vue.use(VueI18n)
 Vue.config.productionTip = false
 
