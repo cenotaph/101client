@@ -1,7 +1,12 @@
 <template>
   <div>
+    <div id="lang">
+      <button v-on:click="setLocale('fi')">FIN</button>
+      |
+      <button v-on:click="setLocale('en')">ENG</button>
+    </div>
     <div class="container" v-if="question.question">
-      <p>{{ question.question.map((q) => { return q.text }).join() }}</p>
+      <p v-for="q in question.question" v-bind:key="q.language" v-show="locale === q.language">{{ q.text }}</p>
       <div class="columns is-centered" v-for="chunk in responsesChunks">
         <div v-bind:class="{ fixed_person: isFixed, has_video: response.videoSrc, dimmed: isDimmed }" class="is-pulled-left column person" v-for="response in chunk" v-bind:id="'person' + response.respondent" v-bind:ref="'person' + response.respondent" v-bind:answer="response.response">
           <component :is="response.video?'a':'span'"  @click="showModal[response.respondent] = true">
@@ -49,6 +54,7 @@ import _ from 'lodash'
 export default {
   data () {
     return {
+      locale: null,
       question: [],
       responses: [],
       participants: [],
@@ -62,13 +68,17 @@ export default {
       isDimmed: false
     }
   },
-  props: ['locale'],
   computed: {
     responsesChunks () {
       return _.chunk(Object.values(this.responses), 14)
     }
   },
   methods: {
+    setLocale: function (locale) {
+      console.log('switching to ' + locale)
+      this.locale = locale
+      localStorage.setItem('locale', locale)
+    },
     sleep (ms) {
       return new Promise(resolve => setTimeout(resolve, ms))
     },
@@ -143,6 +153,9 @@ export default {
     })
   },
   async mounted () {
+    if (localStorage.locale) {
+      this.locale = localStorage.getItem('locale')
+    }
     await this.sleep(3000)
     await this.changeFace()
     // console.log(this.$refs['person2'][0].clientHeight)

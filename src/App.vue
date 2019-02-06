@@ -1,10 +1,5 @@
 <template>
   <div id="app">
-    <div id="lang">
-      <button v-on:click="locale == 'fi'">FIN</button>
-      |
-      <button v-on:click="locale == 'en'">ENG</button>
-    </div>
     <router-view :locale="locale" />
   </div>
 </template>
@@ -12,11 +7,6 @@
 <script>
 export default {
   name: 'App',
-  data () {
-    return {
-      locale: null
-    }
-  },
   mounted () {
     if (localStorage.locale) {
       this.locale = localStorage.getItem('locale')
@@ -32,11 +22,7 @@ export default {
     }
   },
   methods: {
-    setLocale: function (locale) {
-      console.log('switching to ' + locale)
-      this.locale = locale
-      localStorage.setItem('locale', locale)
-    }
+
   }
 }
 </script>
@@ -69,6 +55,8 @@ $column-gap: 0.15rem;
     opacity: 0.35;
     &.has_video {
       opacity: 1 !important;
+      &:hover {
+      }
     }
   }
 }
