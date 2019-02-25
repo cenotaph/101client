@@ -63,3 +63,4 @@ static/avatars/*
 static/avatars.backup/*
 .DS_Store
 
+dist/*

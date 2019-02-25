@@ -6,22 +6,24 @@
       <button v-on:click="setLocale('en')">ENG</button>
     </div>
     <div class="container" v-if="questions.length > 0">
-      <carousel :per-page="1" :navigationEnabled="true" :paginationEnabled="false" :mouse-drag="true" :centerMode="true">
-        <template v-for="question in questions">
-          <slide v-if="question.question.length > 1"  v-bind:key="question">
-            {{ question.index }} :
-            <span v-for="translation in question.question" v-bind:key="translation.language" v-show="locale === translation.language">
-              {{ translation.text }}
-            </span>
-            <Br />
-            <router-link :to="{name: 'Topic', params: {id: question.index }}" class="button topic_button is-link">
-              <span v-show="locale == 'fi'">Valitse tämä aihe</span>
-              <span v-show="locale == 'en'">Choose topic</span>
-            </router-link>
-          </slide>
-        </template>
-      </carousel>
-      <!-- <p>{{ questions }} </p> -->
+      <div class="topic_index">
+        <carousel class="101carousel" :per-page="1" :navigationEnabled="true" :paginationEnabled="false" :mouse-drag="true" :centerMode="true">
+          <template v-for="question in questions">
+            <slide v-if="question.question.length > 1"  v-bind:key="question">
+              {{ question.index }} :
+              <span v-for="translation in question.question" v-bind:key="translation.language" v-show="locale === translation.language">
+                {{ translation.text }}
+              </span>
+              <Br />
+              <router-link :to="{name: 'Topic', params: {id: question.index }}" class="button topic_button is-link">
+                <span v-show="locale == 'fi'">Valitse tämä aihe</span>
+                <span v-show="locale == 'en'">Choose topic</span>
+              </router-link>
+            </slide>
+          </template>
+        </carousel>
+        <!-- <p>{{ questions }} </p> -->
+      </div>
     </div>
   </div>
 </template>
